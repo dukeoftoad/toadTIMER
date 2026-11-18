@@ -6,11 +6,12 @@
 # Runs the lint + unit-test gates, then builds a release APK and AAB and
 # attaches both to an auto-generated GitHub Release.
 #
-# Signing note: without further configuration the Android template signs the
-# release build with the debug keystore, which is fine for sideloading. To
-# publish to the Play Store with a real key, add base64 secrets
-# (ANDROID_KEYSTORE_B64, ANDROID_KEYSTORE_PASSWORD, ...) and a decode step
-# before the build — see README.
+# Signing: the release build is signed with the real upload key. CI decodes
+# android/app/toadtimer-release.jks and android/key.properties from the
+# repository secrets (ANDROID_KEYSTORE_B64, ANDROID_KEYSTORE_PASSWORD,
+# ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD) before the Gradle build. If the
+# secrets are missing, the build falls back to debug signing (see
+# android/app/build.gradle).
 
 name: Release
 
@@ -53,6 +54,28 @@ jobs:
 
       - name: Restore platform scaffolding (android/, ios/)
         run: flutter create --platforms android,ios --org dev.toad --project-name toadtimer .
+
+      - name: Restore release signing key (from secrets)
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_B64" ]; then
+            echo "::warning::ANDROID_KEYSTORE_B64 secret is not set - falling back to debug signing."
+            exit 0
+          fi
+          echo "$ANDROID_KEYSTORE_B64" | base64 --decode > android/app/toadtimer-release.jks
+          {
+            echo "storeFile=toadtimer-release.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+          keytool -list -keystore android/app/toadtimer-release.jks \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
+          echo "Release signing key restored (alias: $ANDROID_KEY_ALIAS)."
 
       - name: Install dependencies
         run: flutter pub get

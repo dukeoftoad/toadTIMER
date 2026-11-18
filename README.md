@@ -120,17 +120,20 @@ git push origin v1.1.0
 ```
 
 The Release workflow attaches `toadtimer-v1.1.0.apk` and `.aab` to the
-release page. Builds are signed with the debug keystore until you wire real
-signing: add repository secrets (`ANDROID_KEYSTORE_B64`,
-`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`) and
-a decode step in `release.yml` before the build.
+release page. Release artifacts are **signed with the real upload key**: the
+workflow decodes the keystore from the repository secrets
+(`ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+`ANDROID_KEY_PASSWORD`) and feeds it to Gradle through `android/key.properties`
+(see `android/app/build.gradle`). Without those secrets — and for local builds —
+the debug keystore is used as a fallback. Keep the keystore file out of git:
+only its base64 copy belongs in secrets.
 
 ### Why `flutter create .` in the workflows?
 
 The repo intentionally vendors only the source that differs from a default
 Flutter template. `flutter create --platforms android,ios --org dev.toad .`
 regenerates the missing Gradle files on the runner **without overwriting**
-the committed manifest, Kotlin sources, lib/ or test/ files (existing files
+the committed manifest, Kotlin sources, Gradle config, lib/ or test/ files (existing files
 are skipped), so CI can build straight from a clean checkout.
 
 ## Enabling the Quick Tile
