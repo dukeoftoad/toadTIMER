@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toadtimer/models/timer_mode.dart';
 import 'package:toadtimer/models/timer_settings.dart';
 import 'package:toadtimer/state/providers.dart';
-import 'package:toadtimer/state/timer_notifier().dart';
+import 'package:toadtimer/state/timer_notifier.dart';
 
 /// Unit tests for the toadTIMER Pomodoro state machine.
 ///
