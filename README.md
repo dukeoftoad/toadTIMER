@@ -19,10 +19,14 @@ A premium Pomodoro timer for Android & iOS, built with **Flutter**.
 |---|---|
 | Modes | Focus / Short Break / Long Break with a configurable long-break cycle |
 | Quick Tiles (in-app) | 15 Sprint · 25 Classic · 50 Deep Work · 90 Marathon · 5 Break · 15 Reset — one tap launches instantly, mid-flow |
+| Session tags | Tag a focus session (General / Work / Study / Reading / Coding / Creative). The tag rides on the log and powers the insights breakdown |
+| Daily goal | Set a daily focus-minutes target; a goal card tracks progress and fires a celebratory snackbar the moment you cross the line |
+| Weekly chart | 7-day focus-minutes bar chart, hand-drawn with CustomPaint (today's bar highlighted with the brand gradient) |
+| Insights screen | Full stats view: weekly chart, tag breakdown bars, summary stats, full tagged log + CSV-to-clipboard export |
 | Auto-start | Toggle auto-start for breaks and/or focus |
 | Sound | Bundled two-tone chime (Web-Audio-style arpeggio, generated 44.1 kHz WAV) |
-| Stats | Sessions today, focus minutes, day streak, all-time — persisted via `shared_preferences` |
-| Settings | Duration sliders, cycle length, auto-start switches, sound & notification toggles, clear-log |
+| Stats | Sessions today, focus minutes, day streak, all-time — persisted via `shared_preferences` (capped at 200 entries in memory and on disk) |
+| Settings | Duration sliders, cycle length, daily goal, auto-start switches, sound & notification toggles, clear-log |
 | App icon | Generated toad mascot, wired via `flutter_launcher_icons` |
 | Premium dial | 60 dial ticks, inner hairline, breathing glow while running, glowing arc tip, per-second digit slide transitions, press-scale + haptic feedback on every control |
 | Tests & CI | Unit-tested state machine, streak logic and repositories; GitHub Actions for lint, tests, debug builds and tag releases |
@@ -38,8 +42,9 @@ lib/
 ├── data/                      # settings / stats repositories (SharedPreferences JSON)
 ├── services/                  # notification_service, sound_service, tile_service
 ├── state/                     # providers.dart (settings/stats/messenger) + timer_notifier.dart
-├── widgets/                   # ring, tabs, dots, controls, quick tiles, stats, history, settings sheet
-└── screens/home_screen.dart   # composition + lifecycle observer
+├── widgets/                   # ring, tabs, dots, controls, quick tiles, stats, history,
+│                              # settings sheet, tag_selector, weekly_chart, daily_goal_card
+└── screens/                   # home_screen.dart (composition + lifecycle) + stats_screen.dart (insights)
 
 test/
 ├── timer_notifier_test.dart   # the full Pomodoro state machine (fake clock)
@@ -110,11 +115,11 @@ deterministically — no real waiting.
 ### Cutting a release
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
-The Release workflow attaches `toadtimer-v1.0.0.apk` and `.aab` to the
+The Release workflow attaches `toadtimer-v1.1.0.apk` and `.aab` to the
 release page. Builds are signed with the debug keystore until you wire real
 signing: add repository secrets (`ANDROID_KEYSTORE_B64`,
 `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`) and
@@ -158,10 +163,12 @@ Or hand a fine-grained PAT to your assistant and let it push for you.
 ## Architecture in one paragraph
 
 `TimerNotifier` holds an immutable `TimerState` (mode, status, remaining,
-wall-clock `endAt`, cycle position, override). A 250 ms ticker computes
+wall-clock `endAt`, cycle position, override, focus **tag**). A 250 ms ticker computes
 remaining time from `endAt`, so the countdown never drifts even when the OS
 throttles background timers — on resume it re-syncs from the wall clock.
-Completion transitions write a `SessionLog`, bump the cycle, pick the next
-mode (short vs. long break), honor auto-start settings, fire the chime +
-snackbar, and resync the Quick-Settings tile. Settings and history persist
-through tiny repository classes over `shared_preferences`.
+Completion transitions write a `SessionLog` (carrying the active tag), bump
+the cycle, pick the next mode (short vs. long break), honor auto-start settings,
+fire the chime + snackbar — with a special celebration when today's focus
+total crosses the daily goal — and resync the Quick-Settings tile. Settings and
+history persist through tiny repository classes over `shared_preferences`,
+both capped at 200 entries so long sessions never leak memory.

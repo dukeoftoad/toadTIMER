@@ -3,7 +3,38 @@ import 'package:flutter/material.dart';
 import '../models/timer_mode.dart';
 
 /// App version mirrored from pubspec.yaml — shown in the home footer.
-const kAppVersion = '1.0.0';
+const kAppVersion = '1.1.0';
+
+/// Maximum session-log entries kept in memory and on disk. Older entries are
+/// trimmed from the tail so long-running sessions never leak memory.
+const kMaxHistory = 200;
+
+/// Default daily focus-minutes goal (2 hours).
+const kDailyGoalDefault = 120;
+
+/// Default tag attached to a focus session when the user hasn't picked one.
+const kDefaultTag = 'General';
+
+/// Selectable focus-session tags, shown as chips above the timer controls.
+/// Order is stable so the chip row and the insights breakdown line up.
+const kTags = <String>['General', 'Work', 'Study', 'Reading', 'Coding', 'Creative'];
+
+/// A display color per tag — indexed by position in [kTags]. Keeping this next
+/// to [kTags] guarantees the two stay in sync.
+const kTagColors = <Color>[
+  Color(0xFF34D399), // General  - emerald
+  Color(0xFF2DD4BF), // Work      - teal
+  Color(0xFFA3E635), // Study     - lime
+  Color(0xFFFBBF24), // Reading   - amber
+  Color(0xFF60A5FA), // Coding    - sky (only blue accent, scoped to a chip)
+  Color(0xFFF472B6), // Creative  - pink
+];
+
+/// Map a tag string to its color, falling back to the General accent.
+Color tagColor(String tag) {
+  final i = kTags.indexOf(tag);
+  return i < 0 ? kTagColors[0] : kTagColors[i];
+}
 
 /// Brand palette — "toad pond" dark theme.
 class AppColors {

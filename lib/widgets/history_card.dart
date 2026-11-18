@@ -8,7 +8,11 @@ import '../models/timer_mode.dart';
 import '../state/providers.dart';
 
 class HistoryCard extends ConsumerWidget {
-  const HistoryCard({super.key});
+  const HistoryCard({super.key, this.showTags = false});
+
+  /// When true, each row surfaces the session tag as a colored chip. The home
+  /// log keeps it off for density; the insights screen turns it on.
+  final bool showTags;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -83,9 +87,10 @@ class HistoryCard extends ConsumerWidget {
             )
           else
             ...recent.asMap().entries.map(
-                  (entry) => _HistoryRow(
+                  (entry) => HistoryRow(
                     log: entry.value,
                     showDivider: entry.key > 0,
+                    showTag: showTags,
                   ),
                 ),
         ],
@@ -94,15 +99,25 @@ class HistoryCard extends ConsumerWidget {
   }
 }
 
-class _HistoryRow extends StatelessWidget {
-  const _HistoryRow({required this.log, required this.showDivider});
+/// Compact, reusable history row. Used by [HistoryCard] and the insights
+/// screen. Pass [showTag] to render a colored tag chip after the label.
+class HistoryRow extends StatelessWidget {
+  const HistoryRow({
+    super.key,
+    required this.log,
+    this.showDivider = true,
+    this.showTag = false,
+  });
 
   final SessionLog log;
   final bool showDivider;
+  final bool showTag;
 
   @override
   Widget build(BuildContext context) {
     final accent = log.mode.accent;
+    final isFocus = log.mode.name == 'focus';
+    final tagClr = tagColor(log.tag);
 
     return Column(
       children: [
@@ -124,14 +139,44 @@ class _HistoryRow extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  '${log.mode.label} · ${log.minutes} min',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                  ),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${log.mode.label} · ${log.minutes} min',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (showTag && isFocus) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: tagClr.withOpacity(0.14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: tagClr.withOpacity(0.35),
+                          ),
+                        ),
+                        child: Text(
+                          log.tag,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: tagClr,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Text(

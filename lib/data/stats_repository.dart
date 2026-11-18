@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/constants.dart';
 import '../models/session_log.dart';
 
 class StatsRepository {
   StatsRepository._();
 
   static const _key = 'toad_history_v1';
-  static const _maxEntries = 200;
 
   static Future<List<SessionLog>> load() async {
     try {
@@ -28,8 +28,8 @@ class StatsRepository {
   static Future<void> save(List<SessionLog> history) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final trimmed = history.length > _maxEntries
-          ? history.sublist(history.length - _maxEntries)
+      final trimmed = history.length > kMaxHistory
+          ? history.sublist(history.length - kMaxHistory)
           : history;
       await prefs.setString(
         _key,

@@ -1,3 +1,4 @@
+import '../core/constants.dart';
 import 'timer_mode.dart';
 
 class TimerSettings {
@@ -10,6 +11,10 @@ class TimerSettings {
   final bool soundOn;
   final bool notifyOn;
 
+  /// Daily focus-minutes goal — drives the goal card and the goal-reached
+  /// celebration when a session pushes today's total across the line.
+  final int dailyGoalMin;
+
   const TimerSettings({
     required this.focusMin,
     required this.shortMin,
@@ -19,6 +24,7 @@ class TimerSettings {
     required this.autoStartFocus,
     required this.soundOn,
     required this.notifyOn,
+    this.dailyGoalMin = kDailyGoalDefault,
   });
 
   const TimerSettings.defaults()
@@ -29,7 +35,8 @@ class TimerSettings {
         autoStartBreaks = true,
         autoStartFocus = false,
         soundOn = true,
-        notifyOn = false;
+        notifyOn = false,
+        dailyGoalMin = kDailyGoalDefault;
 
   int minutesFor(TimerMode mode) => switch (mode) {
         TimerMode.focus => focusMin,
@@ -46,6 +53,7 @@ class TimerSettings {
     bool? autoStartFocus,
     bool? soundOn,
     bool? notifyOn,
+    int? dailyGoalMin,
   }) {
     return TimerSettings(
       focusMin: focusMin ?? this.focusMin,
@@ -56,6 +64,7 @@ class TimerSettings {
       autoStartFocus: autoStartFocus ?? this.autoStartFocus,
       soundOn: soundOn ?? this.soundOn,
       notifyOn: notifyOn ?? this.notifyOn,
+      dailyGoalMin: dailyGoalMin ?? this.dailyGoalMin,
     );
   }
 
@@ -68,6 +77,7 @@ class TimerSettings {
         'autoStartFocus': autoStartFocus,
         'soundOn': soundOn,
         'notifyOn': notifyOn,
+        'dailyGoalMin': dailyGoalMin,
       };
 
   factory TimerSettings.fromJson(Map<String, dynamic> json) {
@@ -90,6 +100,7 @@ class TimerSettings {
       autoStartFocus: readBool('autoStartFocus', false),
       soundOn: readBool('soundOn', true),
       notifyOn: readBool('notifyOn', false),
+      dailyGoalMin: readInt('dailyGoalMin', kDailyGoalDefault),
     );
   }
 }

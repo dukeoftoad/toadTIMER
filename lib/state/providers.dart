@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/constants.dart';
+import '../core/utils.dart';
 import '../data/settings_repository.dart';
 import '../data/stats_repository.dart';
-import '../core/utils.dart';
 import '../models/session_log.dart';
+import '../models/timer_mode.dart';
 import '../models/timer_settings.dart';
 
 /// ---------- Settings ----------
@@ -38,22 +40,60 @@ class StatsState {
 
   const StatsState(this.history);
 
-  int get sessionsToday {
-    final today = dayKey(DateTime.now());
-    return history.where((h) => h.mode.name == 'focus' && dayKey(h.at) == today).length;
-  }
+  bool _isFocus(SessionLog h) => h.mode == TimerMode.focus;
 
-  int get minutesToday {
-    final today = dayKey(DateTime.now());
-    return history
-        .where((h) => h.mode.name == 'focus' && dayKey(h.at) == today)
-        .fold(0, (acc, h) => acc + h.minutes);
-  }
+  String _todayKey() => dayKey(DateTime.now());
 
-  int get allTime =>
-      history.where((h) => h.mode.name == 'focus').length;
+  int get sessionsToday =>
+      history.where((h) => _isFocus(h) && dayKey(h.at) == _todayKey()).length;
+
+  int get minutesToday => history
+      .where((h) => _isFocus(h) && dayKey(h.at) == _todayKey())
+      .fold(0, (acc, h) => acc + h.minutes);
+
+  int get allTime => history.where(_isFocus).length;
 
   int get streak => calcStreak(history);
+
+  /// Focus minutes for the last 7 days, oldest -> newest (index 6 = today).
+  /// Drives the weekly chart on the home and insights screens.
+  List<int> get weeklyMinutes {
+    final today = DateTime.now();
+    final byDay = <String, int>{};
+    for (final h in history) {
+      if (!_isFocus(h)) continue;
+      final k = dayKey(h.at);
+      byDay[k] = (byDay[k] ?? 0) + h.minutes;
+    }
+    return List<int>.generate(7, (i) {
+      final d = today.subtract(Duration(days: 6 - i));
+      return byDay[dayKey(d)] ?? 0;
+    });
+  }
+
+  int get weekTotal => weeklyMinutes.fold(0, (a, b) => a + b);
+
+  /// Tag -> total focus minutes across all history. Used by the insights
+  /// breakdown. Tags with zero minutes are omitted.
+  Map<String, int> get tagMinutes {
+    final m = <String, int>{};
+    for (final h in history) {
+      if (!_isFocus(h)) continue;
+      m[h.tag] = (m[h.tag] ?? 0) + h.minutes;
+    }
+    return m;
+  }
+
+  /// Focus minutes today, grouped by tag.
+  Map<String, int> get tagMinutesToday {
+    final today = _todayKey();
+    final m = <String, int>{};
+    for (final h in history) {
+      if (!_isFocus(h) || dayKey(h.at) != today) continue;
+      m[h.tag] = (m[h.tag] ?? 0) + h.minutes;
+    }
+    return m;
+  }
 }
 
 class StatsController extends StateNotifier<StatsState> {
@@ -69,7 +109,13 @@ class StatsController extends StateNotifier<StatsState> {
   }
 
   Future<void> addSession(SessionLog log) async {
-    state = StatsState([...state.history, log]);
+    // Trim in-memory history to the same cap as the repository so a long-lived
+    // session can't grow the list unbounded while the app stays open.
+    final next = [...state.history, log];
+    final trimmed = next.length > kMaxHistory
+        ? next.sublist(next.length - kMaxHistory)
+        : next;
+    state = StatsState(trimmed);
     await StatsRepository.save(state.history);
   }
 

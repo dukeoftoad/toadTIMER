@@ -4,18 +4,22 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../core/constants.dart';
 import '../models/timer_mode.dart';
+import 'stats_screen.dart';
 import '../services/notification_service.dart';
 import '../state/providers.dart';
 import '../state/timer_notifier.dart';
+import '../widgets/daily_goal_card.dart';
 import '../widgets/history_card.dart';
 import '../widgets/mode_tabs.dart';
 import '../widgets/quick_tiles_grid.dart';
 import '../widgets/session_dots.dart';
 import '../widgets/settings_sheet.dart';
 import '../widgets/stats_grid.dart';
+import '../widgets/tag_selector.dart';
 import '../widgets/tips_card.dart';
 import '../widgets/timer_controls.dart';
 import '../widgets/timer_ring.dart';
+import '../widgets/weekly_chart.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -109,15 +113,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         color: mode.accent.withOpacity(0.14),
                       ),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        ModeTabs(),
-                        SizedBox(height: 24),
-                        TimerRing(),
-                        SizedBox(height: 24),
-                        SessionDots(),
-                        SizedBox(height: 26),
-                        TimerControls(),
+                        const ModeTabs(),
+                        const SizedBox(height: 24),
+                        const TimerRing(),
+                        const SizedBox(height: 24),
+                        const SessionDots(),
+                        const SizedBox(height: 18),
+                        // Tag the focus session so it can be broken down on
+                        // the insights screen. Hidden in break modes.
+                        if (mode == TimerMode.focus) ...[
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 4, bottom: 8),
+                              child: Text(
+                                'TAG THIS SESSION',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.6,
+                                  color: AppColors.textFaint,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const TagSelector(),
+                          const SizedBox(height: 18),
+                        ],
+                        const TimerControls(),
                       ],
                     ),
                   ),
@@ -136,6 +161,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   const SizedBox(height: 12),
                   const StatsGrid(),
+                  const SizedBox(height: 14),
+                  const DailyGoalCard(),
+                  const SizedBox(height: 14),
+                  const WeeklyChart(compact: true),
                   const SizedBox(height: 26),
                   const HistoryCard(),
                   const SizedBox(height: 16),
@@ -282,6 +311,16 @@ class _Header extends ConsumerWidget {
             ],
           ),
         ),
+        _HeaderIconButton(
+          icon: Icons.insights_rounded,
+          tooltip: 'Insights',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const StatsScreen(),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
         _HeaderIconButton(
           icon: notifyOn
               ? Icons.notifications_active_rounded

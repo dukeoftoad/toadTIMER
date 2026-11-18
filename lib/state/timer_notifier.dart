@@ -111,6 +111,14 @@ class TimerNotifier extends StateNotifier<TimerState> {
     );
   }
 
+  /// Tag the current (focus) session. The tag rides along on the timer state
+  /// and is stamped onto the [SessionLog] when the session completes, so it
+  /// can be broken down on the insights screen. Safe to call mid-run.
+  void setTag(String tag) {
+    if (state.tag == tag) return;
+    state = state.copyWith(tag: tag);
+  }
+
   /// Quick Tile tap: launch a preset session immediately.
   void quickStart(TimerMode mode, int minutes) {
     _ticker?.cancel();
@@ -198,9 +206,19 @@ class TimerNotifier extends StateNotifier<TimerState> {
       if (s.mode == TimerMode.longBreak) cycle = 0;
     }
 
+    var prevFocusMinutesToday = 0;
     if (counted) {
+      if (s.mode == TimerMode.focus) {
+        // Capture today's total BEFORE adding so we can detect a goal crossing.
+        prevFocusMinutesToday = _ref.read(statsProvider).minutesToday;
+      }
       _ref.read(statsProvider.notifier).addSession(
-            SessionLog(mode: s.mode, minutes: minutes, at: _now()),
+            SessionLog(
+              mode: s.mode,
+              minutes: minutes,
+              at: _now(),
+              tag: s.tag,
+            ),
           );
     }
 
@@ -236,7 +254,14 @@ class TimerNotifier extends StateNotifier<TimerState> {
       SoundService.instance.playChime();
     }
     if (s.mode == TimerMode.focus) {
-      messenger.show('Focus session complete - nice hop. Break time.');
+      final newMinutes = prevFocusMinutesToday + minutes;
+      if (prevFocusMinutesToday < settings.dailyGoalMin &&
+          newMinutes >= settings.dailyGoalMin) {
+        messenger.show(
+            'Daily goal smashed - $newMinutes focus minutes. Legendary hop!');
+      } else {
+        messenger.show('Focus session complete - nice hop. Break time.');
+      }
     } else {
       messenger.show('Break is over - back to it.');
     }

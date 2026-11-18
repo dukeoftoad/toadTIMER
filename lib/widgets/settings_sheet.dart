@@ -124,6 +124,17 @@ class _SettingsSheetState extends ConsumerState<_SettingsSheet> {
                     settings.copyWith(longEvery: v),
                   ),
                 ),
+                _SliderTile(
+                  label: 'Daily focus goal',
+                  value: settings.dailyGoalMin,
+                  min: 30,
+                  max: 360,
+                  step: 15,
+                  suffix: 'min',
+                  onChanged: (v) => settingsCtrl.update(
+                    settings.copyWith(dailyGoalMin: v),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),

@@ -1,3 +1,4 @@
+import '../core/constants.dart';
 import 'timer_mode.dart';
 
 /// Immutable timer state — the Riverpod state machine's single source of truth.
@@ -18,6 +19,10 @@ class TimerState {
   /// One-shot duration override coming from a Quick Tile.
   final int? overrideMinutes;
 
+  /// Free-form tag the user attaches to a focus session (Work, Study, …).
+  /// Carried through to the [SessionLog] when a focus session completes.
+  final String tag;
+
   const TimerState({
     this.mode = TimerMode.focus,
     this.status = TimerStatus.idle,
@@ -25,6 +30,7 @@ class TimerState {
     this.endAt,
     this.cyclePosition = 0,
     this.overrideMinutes,
+    this.tag = kDefaultTag,
   });
 
   bool get isRunning => status == TimerStatus.running;
@@ -40,6 +46,7 @@ class TimerState {
     int? cyclePosition,
     int? overrideMinutes,
     bool clearOverride = false,
+    String? tag,
   }) {
     return TimerState(
       mode: mode ?? this.mode,
@@ -47,7 +54,9 @@ class TimerState {
       remaining: remaining ?? this.remaining,
       endAt: clearEndAt ? null : (endAt ?? this.endAt),
       cyclePosition: cyclePosition ?? this.cyclePosition,
-      overrideMinutes: clearOverride ? null : (overrideMinutes ?? this.overrideMinutes),
+      overrideMinutes:
+          clearOverride ? null : (overrideMinutes ?? this.overrideMinutes),
+      tag: tag ?? this.tag,
     );
   }
 }
