@@ -6,6 +6,7 @@ import '../core/constants.dart';
 import '../models/timer_mode.dart';
 import '../services/notification_service.dart';
 import '../state/providers.dart';
+import '../state/timer_notifier.dart';
 import '../widgets/history_card.dart';
 import '../widgets/mode_tabs.dart';
 import '../widgets/quick_tiles_grid.dart';
@@ -108,15 +109,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         color: mode.accent.withOpacity(0.14),
                       ),
                     ),
-                    child: Column(
+                    child: const Column(
                       children: [
-                        const ModeTabs(),
-                        const SizedBox(height: 24),
-                        const TimerRing(),
-                        const SizedBox(height: 24),
-                        const SessionDots(),
-                        const SizedBox(height: 26),
-                        const TimerControls(),
+                        ModeTabs(),
+                        SizedBox(height: 24),
+                        TimerRing(),
+                        SizedBox(height: 24),
+                        SessionDots(),
+                        SizedBox(height: 26),
+                        TimerControls(),
                       ],
                     ),
                   ),

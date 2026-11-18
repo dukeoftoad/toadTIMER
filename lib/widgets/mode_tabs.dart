@@ -32,7 +32,7 @@ class ModeTabs extends ConsumerWidget {
           AnimatedAlign(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
-            alignment: Alignment(-1 + 2 * index, 0),
+            alignment: Alignment(-1.0 + 2 * index, 0),
             child: FractionallySizedBox(
               widthFactor: 1 / _modes.length,
               child: AnimatedContainer(

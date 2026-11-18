@@ -9,7 +9,7 @@ import '../models/timer_settings.dart';
 /// ---------- Settings ----------
 
 class SettingsController extends StateNotifier<TimerSettings> {
-  SettingsController.withInitial(TimerSettings initial) : super(initial);
+  SettingsController.withInitial(super.initial);
 
   /// Default constructor hydrates asynchronously (used when not overridden).
   SettingsController.hydrating() : super(const TimerSettings.defaults()) {
@@ -28,7 +28,7 @@ class SettingsController extends StateNotifier<TimerSettings> {
 
 final settingsProvider =
     StateNotifierProvider<SettingsController, TimerSettings>(
-  SettingsController.hydrating.new,
+  (ref) => SettingsController.hydrating(),
 );
 
 /// ---------- Stats / session history ----------
@@ -57,7 +57,7 @@ class StatsState {
 }
 
 class StatsController extends StateNotifier<StatsState> {
-  StatsController.withInitial(StatsState initial) : super(initial);
+  StatsController.withInitial(super.initial);
 
   StatsController.hydrating()
       : super(const StatsState([])) {
@@ -80,7 +80,7 @@ class StatsController extends StateNotifier<StatsState> {
 }
 
 final statsProvider = StateNotifierProvider<StatsController, StatsState>(
-  StatsController.hydrating.new,
+  (ref) => StatsController.hydrating(),
 );
 
 /// ---------- In-app messages (snackbars) ----------
@@ -104,5 +104,5 @@ class UiMessenger extends StateNotifier<UiMessage?> {
 }
 
 final uiMessengerProvider = StateNotifierProvider<UiMessenger, UiMessage?>(
-  UiMessenger.new,
+  (ref) => UiMessenger(),
 );

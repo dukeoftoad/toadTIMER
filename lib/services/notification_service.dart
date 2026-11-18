@@ -49,8 +49,7 @@ class NotificationService {
     try {
       if (!_ready) await init();
       if (defaultTargetPlatform == TargetPlatform.iOS) {
-        final impl =
-            _plugin.resolvePlatformImplementation<IOSFlutterLocalNotificationsPlugin>();
+        final impl = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
         final granted = await impl?.requestPermissions(
           alert: true,
           badge: true,
@@ -59,8 +58,8 @@ class NotificationService {
         return granted ?? false;
       }
       if (defaultTargetPlatform == TargetPlatform.android) {
-        final impl =
-            _plugin.resolvePlatformImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        final impl = _plugin
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
         final granted = await impl?.requestNotificationsPermission();
         return granted ?? false;
       }
@@ -73,8 +72,8 @@ class NotificationService {
   Future<bool> areNotificationsEnabled() async {
     try {
       if (defaultTargetPlatform == TargetPlatform.android) {
-        final impl =
-            _plugin.resolvePlatformImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        final impl = _plugin
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
         return await impl?.areNotificationsEnabled() ?? false;
       }
       if (defaultTargetPlatform == TargetPlatform.iOS) {

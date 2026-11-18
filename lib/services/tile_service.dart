@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Bridge to the Android Quick Settings Tile (ToadTileService.kt).

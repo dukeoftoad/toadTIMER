@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants.dart';
+import '../models/timer_mode.dart';
 import '../state/timer_notifier.dart';
 import 'pressable_scale.dart';
 
