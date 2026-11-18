@@ -121,9 +121,9 @@ class _BarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final n = values.length;
     final maxVal = (values.fold<int>(0, (a, b) => a > b ? a : b)).clamp(1, 1 << 30);
-    final gap = 10.0;
+    const gap = 10.0;
     final barW = (size.width - gap * (n - 1)) / n;
-    final chartTop = 6.0;
+    const chartTop = 6.0;
     final chartBottom = size.height - 18; // leave room for labels
     final chartH = chartBottom - chartTop;
 
