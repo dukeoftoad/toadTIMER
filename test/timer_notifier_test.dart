@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:toadtimer/models/timer_mode.dart';
 import 'package:toadtimer/models/timer_settings.dart';
+import 'package:toadtimer/models/timer_state.dart';
 import 'package:toadtimer/state/providers.dart';
 import 'package:toadtimer/state/timer_notifier.dart';
 
@@ -55,7 +56,7 @@ void main() {
           (ref) {
             final notifier = TimerNotifier(ref, clock: () => fakeNow);
             ref.listen<TimerSettings>(settingsProvider, (_, __) {
-              notifier().onSettingsChanged();
+              notifier.onSettingsChanged();
             });
             return notifier;
           },
