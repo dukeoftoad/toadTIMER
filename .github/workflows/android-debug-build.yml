@@ -1,0 +1,62 @@
+# Android debug build — produces an installable debug APK for quick testing.
+#
+# The repo intentionally does not vendor the generated android/ios platform
+# scaffolding (only the hand-written AndroidManifest.xml, MainActivity.kt and
+# ToadTileService.kt are kept). `flutter create .` restores the rest of the
+# template without overwriting those files, and flutter_launcher_icons then
+# applies the toad icon before the build.
+
+name: Android debug build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: debug-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.24.5"
+
+jobs:
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Restore platform scaffolding (android/, ios/)
+        run: flutter create --platforms android,ios --org dev.toad .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Apply launcher icons
+        run: dart run flutter_launcher_icons
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: toadtimer-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
