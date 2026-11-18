@@ -19,6 +19,12 @@ class TimerState {
   /// One-shot duration override coming from a Quick Tile.
   final int? overrideMinutes;
 
+  /// Total seconds the CURRENT session was planned for, captured when the
+  /// session started. Keeps progress widgets (timer ring) stable even if the
+  /// user edits timer settings mid-run, and survives pause/resume. Null
+  /// means "derive from settings / override".
+  final int? plannedSeconds;
+
   /// Free-form tag the user attaches to a focus session (Work, Study, …).
   /// Carried through to the [SessionLog] when a focus session completes.
   final String tag;
@@ -30,6 +36,7 @@ class TimerState {
     this.endAt,
     this.cyclePosition = 0,
     this.overrideMinutes,
+    this.plannedSeconds,
     this.tag = kDefaultTag,
   });
 
@@ -46,6 +53,8 @@ class TimerState {
     int? cyclePosition,
     int? overrideMinutes,
     bool clearOverride = false,
+    int? plannedSeconds,
+    bool clearPlanned = false,
     String? tag,
   }) {
     return TimerState(
@@ -56,6 +65,8 @@ class TimerState {
       cyclePosition: cyclePosition ?? this.cyclePosition,
       overrideMinutes:
           clearOverride ? null : (overrideMinutes ?? this.overrideMinutes),
+      plannedSeconds:
+          clearPlanned ? null : (plannedSeconds ?? this.plannedSeconds),
       tag: tag ?? this.tag,
     );
   }

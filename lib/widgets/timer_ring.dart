@@ -56,8 +56,11 @@ class _TimerRingState extends ConsumerState<TimerRing>
       }
     });
 
-    final total =
-        (timer.overrideMinutes ?? settings.minutesFor(timer.mode)) * 60;
+    // The session's planned duration was captured at start — using it keeps
+    // the ring stable when the user edits timer settings mid-run. Falls back
+    // to the settings/override duration when no plan exists (idle).
+    final total = timer.plannedSeconds ??
+        ((timer.overrideMinutes ?? settings.minutesFor(timer.mode)) * 60);
     final progress =
         total <= 0 ? 0.0 : (1 - timer.remaining / total).clamp(0.0, 1.0);
 

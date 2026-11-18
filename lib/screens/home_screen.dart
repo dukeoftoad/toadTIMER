@@ -327,12 +327,14 @@ class _Header extends ConsumerWidget {
               : Icons.notifications_rounded,
           tooltip: 'Notifications',
           onTap: () async {
+            // Capture what we need from ref BEFORE awaiting — using ref after
+            // an async gap throws if this widget was disposed meanwhile.
+            final settingsCtrl = ref.read(settingsProvider.notifier);
+            final current = ref.read(settingsProvider);
             final granted =
                 await NotificationService.instance.requestPermission();
             if (granted) {
-              ref.read(settingsProvider.notifier).update(
-                    ref.read(settingsProvider).copyWith(notifyOn: true),
-                  );
+              settingsCtrl.update(current.copyWith(notifyOn: true));
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

@@ -325,6 +325,56 @@ void main() {
     });
   });
 
+  group('planned session duration (ring stability)', () {
+    test('start() captures the full planned duration and keeps it on resume',
+        () {
+      notifier().start();
+      expect(state().plannedSeconds, 25 * 60);
+
+      fakeNow = fakeNow.add(const Duration(seconds: 30));
+      notifier().pause();
+      // resuming keeps the original plan — not the frozen remaining
+      notifier().start();
+      expect(state().plannedSeconds, 25 * 60);
+    });
+
+    test('changing focus length mid-run does not move the plan', () async {
+      notifier().start();
+      fakeNow = fakeNow.add(const Duration(seconds: 60));
+
+      await container
+          .read(settingsProvider.notifier)
+          .update(container.read(settingsProvider).copyWith(focusMin: 90));
+      await Future<void>.delayed(Duration.zero);
+
+      // the plan is untouched and the countdown stays honest
+      expect(state().plannedSeconds, 25 * 60);
+      notifier().tick();
+      expect(state().remaining, 25 * 60 - 60);
+    });
+
+    test('quickStart plans the override duration', () {
+      notifier().quickStart(TimerMode.focus, 15);
+      expect(state().plannedSeconds, 15 * 60);
+    });
+
+    test('completion re-plans for the next phase', () {
+      runSession(25);
+      expect(state().mode, TimerMode.shortBreak);
+      expect(state().plannedSeconds, 5 * 60);
+    });
+
+    test('reset and selectMode clear the plan', () {
+      notifier().quickStart(TimerMode.focus, 15);
+      notifier().reset();
+      expect(state().plannedSeconds, isNull);
+
+      notifier().quickStart(TimerMode.focus, 15);
+      notifier().selectMode(TimerMode.longBreak);
+      expect(state().plannedSeconds, isNull);
+    });
+  });
+
   group('resync (Quick Tile + wall-clock catch-up)', () {
     test('consumes a pending start_focus action into a running session',
         () async {

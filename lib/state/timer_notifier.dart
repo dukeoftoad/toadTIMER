@@ -51,7 +51,10 @@ class TimerNotifier extends StateNotifier<TimerState> {
 
   void _applySettingsToRemaining() {
     if (state.isIdle && state.overrideMinutes == null) {
-      state = state.copyWith(remaining: _totalSeconds(state.mode, null));
+      final secs = _totalSeconds(state.mode, null);
+      // Re-plan as well so the ring's total stays in sync with the new
+      // duration while idle (a stale plan would fake a partial progress).
+      state = state.copyWith(remaining: secs, plannedSeconds: secs);
     }
   }
 
@@ -59,6 +62,9 @@ class TimerNotifier extends StateNotifier<TimerState> {
 
   void start() {
     if (state.isRunning) return;
+    // A fresh session (idle, or drained to zero while paused) gets a new
+    // plan; resuming a paused session keeps the original one.
+    final fresh = state.isIdle || state.remaining <= 0;
     if (state.remaining <= 0) {
       state = state.copyWith(
         remaining: _totalSeconds(state.mode, state.overrideMinutes),
@@ -67,6 +73,7 @@ class TimerNotifier extends StateNotifier<TimerState> {
     state = state.copyWith(
       status: TimerStatus.running,
       endAt: _now().add(Duration(seconds: state.remaining)),
+      plannedSeconds: fresh ? state.remaining : null,
     );
     _startTicker();
     _scheduleForRemaining();
@@ -94,6 +101,7 @@ class TimerNotifier extends StateNotifier<TimerState> {
       remaining: _totalSeconds(state.mode, null),
       clearEndAt: true,
       clearOverride: true,
+      clearPlanned: true,
     );
     TileBridge.instance.setActive(false);
   }
@@ -108,7 +116,11 @@ class TimerNotifier extends StateNotifier<TimerState> {
       remaining: _totalSeconds(mode, null),
       clearEndAt: true,
       clearOverride: true,
+      clearPlanned: true,
     );
+    // Switching modes abandons the running session — mirror pause()/reset()
+    // so the system Quick Tile doesn't keep claiming a session is active.
+    TileBridge.instance.setActive(false);
   }
 
   /// Tag the current (focus) session. The tag rides along on the timer state
@@ -129,6 +141,7 @@ class TimerNotifier extends StateNotifier<TimerState> {
       remaining: secs,
       status: TimerStatus.running,
       endAt: _now().add(Duration(seconds: secs)),
+      plannedSeconds: secs,
     );
     _startTicker();
     _scheduleForRemaining();
@@ -178,6 +191,8 @@ class TimerNotifier extends StateNotifier<TimerState> {
   }
 
   void _scheduleForRemaining() {
+    // Respect the user's notification setting — no alarm when it is off.
+    if (!_settings.notifyOn) return;
     NotificationService.instance
         .scheduleSessionEnd(mode: state.mode, duration: Duration(seconds: state.remaining));
   }
@@ -234,6 +249,7 @@ class TimerNotifier extends StateNotifier<TimerState> {
       status: auto ? TimerStatus.running : TimerStatus.idle,
       endAt: auto ? now.add(Duration(seconds: nextSeconds)) : null,
       clearEndAt: !auto,
+      plannedSeconds: nextSeconds,
     );
 
     if (auto) {

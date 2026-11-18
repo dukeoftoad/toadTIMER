@@ -32,7 +32,10 @@ class ModeTabs extends ConsumerWidget {
           AnimatedAlign(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
-            alignment: Alignment(-1.0 + 2 * index, 0),
+            // Spread the highlight across n tabs: -1 .. 0 .. +1. A naive
+            // `-1 + 2 * index` only works for two tabs — with three it shoves
+            // the middle pill to the far edge and the last one off-screen.
+            alignment: Alignment(-1 + 2 * index / (_modes.length - 1), 0),
             child: FractionallySizedBox(
               widthFactor: 1 / _modes.length,
               child: AnimatedContainer(

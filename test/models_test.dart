@@ -111,6 +111,20 @@ void main() {
       expect(cleared.overrideMinutes, isNull);
     });
 
+    test('plannedSeconds can be set, preserved and cleared', () {
+      const state = TimerState();
+      expect(state.plannedSeconds, isNull);
+
+      final planned = state.copyWith(plannedSeconds: 1500);
+      expect(planned.plannedSeconds, 1500);
+
+      final kept = planned.copyWith(remaining: 1200);
+      expect(kept.plannedSeconds, 1500);
+
+      final cleared = planned.copyWith(clearPlanned: true);
+      expect(cleared.plannedSeconds, isNull);
+    });
+
     test('unspecified fields are preserved', () {
       const state = TimerState(
         mode: TimerMode.shortBreak,
