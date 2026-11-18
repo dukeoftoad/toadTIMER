@@ -52,7 +52,7 @@ jobs:
           cache: true
 
       - name: Restore platform scaffolding (android/, ios/)
-        run: flutter create --platforms android,ios --org dev.toad .
+        run: flutter create --platforms android,ios --org dev.toad --project-name toadtimer .
 
       - name: Install dependencies
         run: flutter pub get
