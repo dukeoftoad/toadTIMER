@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/constants.dart';
 import '../core/utils.dart';
@@ -150,9 +149,10 @@ class _TimerRingState extends ConsumerState<TimerRing>
                         clock,
                         key: ValueKey<String>(clock),
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.jetBrainsMono(
+                        style: TextStyle(
+                          fontFamily: 'Sora',
                           fontSize: size * 0.185,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: -2,
                           color: AppColors.textPrimary,
                           height: 1.0,
@@ -166,7 +166,8 @@ class _TimerRingState extends ConsumerState<TimerRing>
                     child: Text(
                       meta.tagline,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
                         fontSize: 11,
                         color: AppColors.textFaint,
                       ),
@@ -217,7 +218,8 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Inter',
               fontSize: 9.5,
               fontWeight: FontWeight.w700,
               letterSpacing: 2.6,

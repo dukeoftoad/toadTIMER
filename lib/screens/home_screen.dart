@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/constants.dart';
+import '../core/theme.dart';
 import '../models/timer_mode.dart';
 import 'stats_screen.dart';
 import '../services/notification_service.dart';
@@ -17,6 +19,8 @@ import '../widgets/settings_sheet.dart';
 import '../widgets/stats_grid.dart';
 import '../widgets/tag_selector.dart';
 import '../widgets/tips_card.dart';
+import '../widgets/toad.dart';
+import '../widgets/toad_icon.dart';
 import '../widgets/timer_controls.dart';
 import '../widgets/timer_ring.dart';
 import '../widgets/weekly_chart.dart';
@@ -146,9 +150,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ],
                     ),
                   ),
+                  const SizedBox(height: 14),
+                  const ToadCompanion(),
                   const SizedBox(height: 26),
                   const _SectionHeader(
                     title: 'Quick Tiles',
+                    icon: 'hourglass.svg',
                     subtitle: 'One-tap launch presets. Pin the system tile from '
                         'quick settings for the real deal.',
                   ),
@@ -157,6 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   const SizedBox(height: 26),
                   const _SectionHeader(
                     title: 'Today at the pond',
+                    icon: 'activity.svg',
                     subtitle: 'Sessions, focus minutes and your streak.',
                   ),
                   const SizedBox(height: 12),
@@ -267,7 +275,7 @@ class _Header extends ConsumerWidget {
             border: Border.all(color: Colors.white.withOpacity(0.1)),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF34D399).withOpacity(0.2),
+                color: AppColors.frog.withOpacity(0.22),
                 blurRadius: 16,
               ),
             ],
@@ -296,14 +304,15 @@ class _Header extends ConsumerWidget {
                     TextSpan(text: 'toad'),
                     TextSpan(
                       text: 'TIMER',
-                      style: TextStyle(color: Color(0xFF34D399)),
+                      style: TextStyle(color: AppColors.frog400),
                     ),
                   ],
                 ),
               ),
               Text(
                 'stay hoppy. stay focused.',
-                style: GoogleFonts.inter(
+                style: TextStyle(
+                  fontFamily: 'Inter',
                   fontSize: 11,
                   color: Colors.white.withOpacity(0.4),
                 ),
@@ -400,24 +409,139 @@ class _HeaderIconButton extends StatelessWidget {
   }
 }
 
+/// The toadmark signature strip. The hand-drawn toad is not a sticker — it
+/// is the body of the app: it runs while a focus session runs, strolls
+/// during breaks, breathes while idle and leaps the moment a session lands.
+class ToadCompanion extends ConsumerStatefulWidget {
+  const ToadCompanion({super.key});
+
+  @override
+  ConsumerState<ToadCompanion> createState() => _ToadCompanionState();
+}
+
+class _ToadCompanionState extends ConsumerState<ToadCompanion> {
+  Timer? _celebrateTimer;
+  bool _celebrating = false;
+
+  @override
+  void dispose() {
+    _celebrateTimer?.cancel();
+    super.dispose();
+  }
+
+  void _rejoice() {
+    _celebrateTimer?.cancel();
+    setState(() => _celebrating = true);
+    _celebrateTimer = Timer(const Duration(milliseconds: 2600), () {
+      if (mounted) setState(() => _celebrating = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // A finished session pops the uiMessenger — leap for joy when it does.
+    ref.listen<UiMessage?>(uiMessengerProvider, (previous, next) {
+      if (next != null) _rejoice();
+    });
+
+    final status = ref.watch(timerProvider.select((s) => s.status));
+    final mode = ref.watch(timerProvider.select((s) => s.mode));
+
+    final mood = _celebrating
+        ? ToadMood.celebrate
+        : switch (status) {
+            TimerStatus.running =>
+              mode == TimerMode.focus ? ToadMood.run : ToadMood.walk,
+            _ => ToadMood.idle,
+          };
+
+    final (title, sub) = switch (mood) {
+      ToadMood.run => (
+        'running with you',
+        'the toad keeps pace while the clock hops.',
+      ),
+      ToadMood.walk => (
+        'stretching those legs',
+        'break time — the toad strolls around the pond.',
+      ),
+      ToadMood.celebrate => (
+        'ribbit — session complete',
+        'the toad leaps. nice work down at the pond.',
+      ),
+      ToadMood.idle => (
+        'catching flies',
+        'start a session and the toad runs it with you.',
+      ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 18, 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.line.withOpacity(0.55)),
+      ),
+      child: Row(
+        children: [
+          ToadMascot(mood: mood, size: 76),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppText.sora(size: 15)),
+                const SizedBox(height: 4),
+                Text(
+                  sub,
+                  style: AppText.inter(
+                    size: 11.5,
+                    color: AppColors.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    this.icon,
+  });
 
   final String title;
   final String subtitle;
+
+  /// Optional family stroke icon drawn before the title.
+  final String? icon;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
+        Row(
+          children: [
+            if (icon != null) ...[
+              ToadIcon(icon!, size: 15, color: AppColors.frog400),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 3),
         Text(
