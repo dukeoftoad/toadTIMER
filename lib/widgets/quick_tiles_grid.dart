@@ -6,6 +6,7 @@ import '../core/constants.dart';
 import '../models/timer_mode.dart';
 import '../state/timer_notifier.dart';
 import 'pressable_scale.dart';
+import 'toad_icon.dart';
 
 class QuickTilesGrid extends ConsumerWidget {
   const QuickTilesGrid({super.key});
@@ -70,7 +71,7 @@ class QuickTilesGrid extends ConsumerWidget {
                               color: accent.withOpacity(0.25),
                             ),
                           ),
-                          child: Icon(tile.icon, size: 17, color: accent),
+                          child: ToadIcon(tile.svg, size: 17, color: accent),
                         ),
                         AnimatedOpacity(
                           duration: const Duration(milliseconds: 200),

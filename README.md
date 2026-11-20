@@ -11,7 +11,8 @@ A premium Pomodoro timer for Android & iOS, built with **Flutter**.
 - **State management practice** — a single Riverpod `StateNotifier` state machine (`lib/state/timer_notifier.dart`) drives every transition: `idle → running → paused → complete → next mode`. The UI layer stays dumb; side effects (chime, exact alarms, Quick-Settings tile sync) hang off the same transitions.
 - **Notifications** — `flutter_local_notifications` + `timezone`: when a session starts, an **exact alarm** (`exactAllowWhileIdle`) is scheduled for its end time, so the alert fires even if the app is backgrounded or the screen is off. Pausing/resetting cancels the pending alarm.
 - **Quick Tile** — a real Android **Quick Settings tile** (`ToadTileService.kt`, "Toad Focus"). Tap it from the notification shade: it flips state, drops a pending action into SharedPreferences and opens the app, which consumes the action on resume and starts/stops a focus session. (iOS has no Quick-Tile equivalent; the channel no-ops there.)
-- **Premium dark design** — toad-pond dark theme, gradient sweep progress ring (CustomPainter), animated segmented mode tabs, cycle dots, quick-tile grid, stats (sessions today / focus minutes / streak / all-time), session log and a settings bottom sheet.
+- **toadmark family design** — the ink-and-frog design system shared with toadHEALTH: deep ink surfaces (`#0B100F`), frog-lime accents, bundled Inter/Sora typography (no network font fetches), the family 24px stroke icon set, gradient sweep progress ring (CustomPainter), animated segmented mode tabs, cycle dots, quick-tile grid, stats (sessions today / focus minutes / streak / all-time), session log and a settings bottom sheet.
+- **The toad runs with you** — a hand-drawn animated toad (pure CustomPainter, zero image assets) mirrors the timer: it runs during focus sessions, strolls during breaks, breathes while idle and leaps the moment a session lands. The toad is the body of the app, not a sticker.
 
 ## Features
 
@@ -28,6 +29,7 @@ A premium Pomodoro timer for Android & iOS, built with **Flutter**.
 | Stats | Sessions today, focus minutes, day streak, all-time — persisted via `shared_preferences` (capped at 200 entries in memory and on disk) |
 | Settings | Duration sliders, cycle length, daily goal, auto-start switches, sound & notification toggles, clear-log |
 | App icon | Generated toad mascot, wired via `flutter_launcher_icons` |
+| Companion strip | The toadmark mascot lives under the dial and reflects the session state in real time (run / walk / breathe / leap) |
 | Premium dial | 60 dial ticks, inner hairline, breathing glow while running, glowing arc tip, per-second digit slide transitions, press-scale + haptic feedback on every control |
 | Tests & CI | Unit-tested state machine, streak logic and repositories; GitHub Actions for lint, tests, debug builds and tag releases |
 

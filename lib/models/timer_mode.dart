@@ -28,7 +28,7 @@ extension TimerModeX on TimerMode {
       };
 
   Color get accent => switch (this) {
-        TimerMode.focus => const Color(0xFF34D399),
+        TimerMode.focus => const Color(0xFF84CC16),
         TimerMode.shortBreak => const Color(0xFF2DD4BF),
         TimerMode.longBreak => const Color(0xFFFBBF24),
       };
