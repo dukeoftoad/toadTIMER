@@ -460,10 +460,10 @@ class UpdateBanner extends StatelessWidget {
             ),
             child: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 62,
                   height: 46,
-                  child: const ToadMascot(mood: ToadMood.celebrate, size: 46),
+                  child: ToadMascot(mood: ToadMood.celebrate, size: 46),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
