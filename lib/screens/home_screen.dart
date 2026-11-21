@@ -24,6 +24,7 @@ import '../widgets/toad_icon.dart';
 import '../widgets/timer_controls.dart';
 import '../widgets/timer_ring.dart';
 import '../widgets/weekly_chart.dart';
+import '../update/update_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -103,6 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _Header(notifyOn: settings.notifyOn),
+                  // The quiet update banner the silent startup check can
+                  // raise; nothing downloads until the user asks.
+                  const UpdateBanner(),
                   const SizedBox(height: 20),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 400),

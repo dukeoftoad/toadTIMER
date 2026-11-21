@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants.dart';
 import '../services/notification_service.dart';
 import '../state/providers.dart';
+import '../update/update_card.dart';
 
 Future<void> showSettingsSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -273,6 +274,12 @@ class _SettingsSheetState extends ConsumerState<_SettingsSheet> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // The self-update panel (About lives here too — the sheet is the
+            // app's settings surface): manual GitHub check, APK download and
+            // installer handoff, ported from the family's update flow.
+            const UpdateCard(),
           ],
         ),
       ),

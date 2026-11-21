@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../models/timer_mode.dart';
 
-/// App version mirrored from pubspec.yaml — shown in the home footer.
-const kAppVersion = '1.2.0';
+/// App version mirrored from pubspec.yaml — shown in the home footer and
+/// compared against the latest GitHub release tag by the update flow
+/// (lib/update/). Keep it in lockstep with the pubspec version.
+const kAppVersion = '1.2.1';
 
 /// Maximum session-log entries kept in memory and on disk. Older entries are
 /// trimmed from the tail so long-running sessions never leak memory.
