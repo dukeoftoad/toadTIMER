@@ -1,7 +1,7 @@
 name: toadtimer
 description: "toadTIMER - a premium Pomodoro timer with quick tiles, session stats, local notifications and Riverpod state management."
 publish_to: "none"
-version: 1.2.0+3
+version: 1.2.1+4
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

@@ -17,6 +17,12 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // The self-update flow's native half: system download + installer
+        // handoff (UpdatePlugin.kt), ported from the family's
+        // toadFILES/toadHEALTH flow.
+        UpdatePlugin.register(this, flutterEngine.dartExecutor.binaryMessenger)
+
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "dev.toad.toadtimer/tile",

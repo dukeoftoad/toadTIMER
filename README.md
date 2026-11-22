@@ -27,7 +27,8 @@ A premium Pomodoro timer for Android & iOS, built with **Flutter**.
 | Auto-start | Toggle auto-start for breaks and/or focus |
 | Sound | Bundled two-tone chime (Web-Audio-style arpeggio, generated 44.1 kHz WAV) |
 | Stats | Sessions today, focus minutes, day streak, all-time — persisted via `shared_preferences` (capped at 200 entries in memory and on disk) |
-| Settings | Duration sliders, cycle length, daily goal, auto-start switches, sound & notification toggles, clear-log |
+| Settings | Duration sliders, cycle length, daily goal, auto-start switches, sound & notification toggles, clear-log, self-update panel |
+| Self-update | One quiet GitHub `releases/latest` check on open (dismissible home banner) + a manual "Check for updates" panel in settings; APK download via the system DownloadManager — zero new dependencies (dart:io `HttpClient`) |
 | App icon | Generated toad mascot, wired via `flutter_launcher_icons` |
 | Companion strip | The toadmark mascot lives under the dial and reflects the session state in real time (run / walk / breathe / leap) |
 | Premium dial | 60 dial ticks, inner hairline, breathing glow while running, glowing arc tip, per-second digit slide transitions, press-scale + haptic feedback on every control |
@@ -46,6 +47,8 @@ lib/
 ├── state/                     # providers.dart (settings/stats/messenger) + timer_notifier.dart
 ├── widgets/                   # ring, tabs, dots, controls, quick tiles, stats, history,
 │                              # settings sheet, tag_selector, weekly_chart, daily_goal_card
+├── update/                    # in-app update flow: GitHub checker (dart:io HttpClient),
+│                              # tag comparison, controller, settings panel + home banner
 └── screens/                   # home_screen.dart (composition + lifecycle) + stats_screen.dart (insights)
 
 test/
@@ -53,12 +56,14 @@ test/
 ├── core_utils_test.dart       # formatClock, dayKey, relativeTime, calcStreak
 ├── models_test.dart           # settings/log/state serialization + copyWith
 ├── stats_state_test.dart      # stats aggregation, repositories, 200-entry cap
+├── update_test.dart           # release tag comparison + GitHub payload parsing
 └── widget_test.dart           # framework smoke test
 
 android/app/src/main/
-├── AndroidManifest.xml        # POST_NOTIFICATIONS, exact alarms, QS tile service
+├── AndroidManifest.xml        # POST_NOTIFICATIONS, exact alarms, QS tile service, update permissions
 └── kotlin/dev/toad/toadtimer/
-    ├── MainActivity.kt        # "dev.toad.toadtimer/tile" MethodChannel
+    ├── MainActivity.kt        # "dev.toad.toadtimer/tile" MethodChannel + UpdatePlugin registration
+    ├── UpdatePlugin.kt        # "dev.toad.toadtimer/update" — DownloadManager + installer handoff
     └── ToadTileService.kt     # Quick Settings TileService
 assets/
 ├── icon/toad_icon.png         # mascot (also the launcher icon source)
@@ -153,6 +158,13 @@ are skipped), so CI can build straight from a clean checkout.
   Doze. `USE_EXACT_ALARM` is accepted for alarm/timer apps on Play; if you
   target other categories, remove it and rely on the user-granted
   `SCHEDULE_EXACT_ALARM` fallback.
+- **INTERNET** — the update flow's only network path: one plain GET to the
+  repo's `releases/latest` on GitHub, on your "Check for updates" tap or
+  once silently on app open. Nothing about the device or the session log
+  is ever sent; the pond is otherwise fully offline.
+- **REQUEST_INSTALL_PACKAGES** — the installer handoff after you tap
+  "Download & install" in the settings update panel. The APK comes from
+  the same GitHub release page.
 - **iOS** — notifications request permission on first toggle; there is no
   Quick Tile; the tile channel is a safe no-op.
 

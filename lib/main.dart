@@ -7,6 +7,7 @@ import 'data/stats_repository.dart';
 import 'services/notification_service.dart';
 import 'services/sound_service.dart';
 import 'state/providers.dart';
+import 'update/update_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,11 @@ Future<void> main() async {
 
   final settings = await SettingsRepository.load();
   final stats = StatsState(await StatsRepository.load());
+
+  // The silent once-per-process update probe: any failure stays quiet; a
+  // newer release only raises the dismissible home banner. Never
+  // downloads anything on its own.
+  UpdateController.instance.checkSilentlyOnce();
 
   runApp(
     ProviderScope(
